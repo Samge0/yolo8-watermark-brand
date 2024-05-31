@@ -1,0 +1,9 @@
+train: ../data/train/images
+val: ../data/val/images
+test: ../data/test/images
+
+# 类别数
+nc: 1
+
+# 类别名称
+names: ['W']
