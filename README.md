@@ -8,8 +8,8 @@
 ### 当前开发环境使用的关键依赖版本
 ```text
 python==3.8.18
-torch==2.1.1+cu118
-torchvision==0.16.1+cu118
+torch==2.3.0+cu118
+torchvision==0.18.0+cu118
 ultralytics==8.2.26
 labelImg==1.8.6
 ```
