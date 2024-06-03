@@ -56,7 +56,7 @@ if __name__ == "__main__":
     _inference("test.png", f"{output_dir}/test.png")
 
     # inference batch
-    # batch_dir = "datasets/data/val/images"
-    # _test_batch(batch_dir=batch_dir)
+    batch_dir = "datasets/data/val/images"
+    _test_batch(batch_dir=batch_dir)
     
     print("all done")

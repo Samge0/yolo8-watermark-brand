@@ -10,7 +10,9 @@
 python==3.8.18
 torch==2.3.0+cu118
 torchvision==0.18.0+cu118
-ultralytics==8.2.26
+ultralytics==8.2.28
+
+# labelImg is used to label the training data
 labelImg==1.8.6
 ```
 
