@@ -1,0 +1,12 @@
+{
+	"name": "yolo8-watermark-brand",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "yolo8-watermark-brand",
+    "workspaceFolder": "/app",
+    "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "humao.rest-client",
+        "samge.vscode-samge-translate"
+    ]
+}

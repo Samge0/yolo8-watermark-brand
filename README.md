@@ -2,7 +2,7 @@
 
 本demo使用`labelImg`对`26`张样本图片的水印位置进行标注，[ultralytics-YOLO8](https://github.com/ultralytics/ultralytics)对水印位置进行模型训练&检测。
 
-如果需要使用 [ultralytics-YOLO8](https://github.com/ultralytics/ultralytics) + [IOPaint](https://github.com/Sanster/IOPaint) 进行组合，自动移除yolo识别的目标水印，请点击[yolo8-plus-iopaint](https://github.com/Samge0/yolo8-plus-iopaint)仓库查看。
+如果需要使用 [ultralytics-YOLO8](https://github.com/ultralytics/ultralytics) + [IOPaint](https://github.com/Sanster/IOPaint) 进行组合，自动移除yolo识别的目标水印，请点击[yolo8-watermark-brand](https://github.com/Samge0/yolo8-watermark-brand)仓库查看。
 
 
 ### 当前开发环境使用的关键依赖版本
@@ -17,19 +17,22 @@ labelImg==1.8.6
 ```
 
 
-### 安装依赖
-- 【二选一】安装torch-cpu版
-    ```shell
-    pip install torch torchvision
-    ```
-- 【二选一】安装torch-cuda版
-    ```shell
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-    ```
-- 【必要】安装依赖
-    ```shell
-    pip install -r requirements.txt
-    ```
+### 环境配置
+- 【推荐】使用vscode的`Dev Containers`模式，参考[.devcontainer/README.md](.devcontainer/README.md)
+
+- 【可选】其他虚拟环境方式
+    - 【二选一】安装torch-cpu版
+        ```shell
+        pip install torch torchvision
+        ```
+    - 【二选一】安装torch-cuda版
+        ```shell
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+        ```
+    - 【必要】安装依赖
+        ```shell
+        pip install -r requirements.txt
+        ```
 
 
 ### 训练
