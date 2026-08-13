@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌Logo水印检测Demo - YOLO8智能检测</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            400: '#5d6be8',
+                            500: '#414dd8',
+                            600: '#3642c2',
+                            700: '#2d38a6',
+                        },
+                        neutral: {
+                            50: '#f8f9fe',
+                            100: '#f0f2fa',
+                            200: '#e5e8f4',
+                            300: '#d4d9eb',
+                            800: '#4a4e6a',
+                            900: '#3a3d52',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans SC"', '"Inter"', 'system-ui', 'sans-serif'],
+                        serif: ['"Noto Serif SC"', '"Manrope"', 'Georgia', 'serif'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px rgba(65, 77, 216, 0.1)',
+                        'glow': '0 0 40px rgba(65, 77, 216, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f8f9fe 0%, #eef1ff 50%, #f5f7ff 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(65, 77, 216, 0.08);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #414dd8 0%, #6b7df2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .icon-gradient {
+            background: linear-gradient(135deg, #414dd8 0%, #5d6be8 50%, #3642c2 100%);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #414dd8 0%, #5d6be8 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(65, 77, 216, 0.3);
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(65, 77, 216, 0.12);
+        }
+        details[open] summary ~ * {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, #414dd8 0%, #6b7df2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .screenshot-placeholder::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="min-h-screen text-neutral-900">
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card shadow-glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="icon.png" alt="Logo" class="w-9 h-9">
+                    <span class="font-semibold text-lg text-neutral-900">YOLO8 水印检测</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-neutral-700 hover:text-brand-500 transition-colors">特性</a>
+                    <a href="#how-it-works" class="text-neutral-700 hover:text-brand-500 transition-colors">工作流程</a>
+                    <a href="#faq" class="text-neutral-700 hover:text-brand-500 transition-colors">常见问题</a>
+                    <a href="https://github.com/Samge0/yolo8-watermark-brand" target="_blank" class="text-neutral-700 hover:text-brand-500 transition-colors flex items-center space-x-1">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="https://github.com/Samge0/yolo8-plus-iopaint" target="_blank" class="btn-gradient text-white px-5 py-2.5 rounded-lg font-medium">
+                        自动移除水印
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center space-x-2 bg-brand-50 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <span>基于 Ultralytics YOLO8</span>
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 mb-6 leading-tight">
+                    品牌<span class="gradient-text">Logo</span>水印检测Demo
+                </h1>
+                <p class="text-xl text-neutral-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    使用 labelImg 对 26 张样本图片的水印位置进行标注，ultralytics-YOLO8 对水印位置进行模型训练与检测
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#how-it-works" class="btn-gradient text-white px-8 py-4 rounded-xl font-semibold text-lg w-full sm:w-auto text-center">
+                        开始使用
+                    </a>
+                    <a href="https://github.com/Samge0/yolo8-plus-iopaint" target="_blank" class="glass-card text-neutral-700 px-8 py-4 rounded-xl font-semibold text-lg w-full sm:w-auto text-center border-2 border-brand-200 hover:border-brand-300 transition-colors">
+                        查看自动移除方案
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">核心特性</h2>
+                <p class="text-neutral-600 text-lg max-w-2xl mx-auto">基于先进的目标检测技术，提供高效精准的水印识别解决方案</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">高精度检测</h3>
+                    <p class="text-neutral-600 leading-relaxed">基于 YOLO8 先进的深度学习算法，实现像素级精度的水印定位识别</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">快速推理</h3>
+                    <p class="text-neutral-600 leading-relaxed">优化的模型结构支持实时检测，单张图片处理速度达到毫秒级别</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">简单标注</h3>
+                    <p class="text-neutral-600 leading-relaxed">集成 labelImg 可视化标注工具，直观的图形界面简化数据准备流程</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">易于训练</h3>
+                    <p class="text-neutral-600 leading-relaxed">支持自定义数据集训练，只需简单的标注即可适配各类品牌水印</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">环境灵活</h3>
+                    <p class="text-neutral-600 leading-relaxed">支持 Dev Containers、虚拟环境等多种配置方式，适配不同开发场景</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="icon-gradient w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-900 mb-3">开源生态</h3>
+                    <p class="text-neutral-600 leading-relaxed">结合 IOPaint 实现自动水印移除，构建完整的水印处理解决方案</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">工作流程</h2>
+                <p class="text-neutral-600 text-lg max-w-2xl mx-auto">从环境配置到模型推理的完整流程指引</p>
+            </div>
+
+            <div class="space-y-12">
+                <!-- Step 1 -->
+                <div class="glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="flex items-start space-x-4">
+                        <div class="icon-gradient w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span class="text-white font-bold text-xl">1</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-neutral-900 mb-3">环境配置</h3>
+                            <div class="space-y-4">
+                                <p class="text-neutral-600">推荐使用 VS Code 的 Dev Containers 模式，或选择以下虚拟环境方式：</p>
+                                <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
+                                    <code class="text-green-400 text-sm"># CPU 版本
+pip install torch torchvision
+
+# CUDA 版本
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+# 安装项目依赖
+pip install -r requirements.txt</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="flex items-start space-x-4">
+                        <div class="icon-gradient w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span class="text-white font-bold text-xl">2</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-neutral-900 mb-3">数据准备与标注</h3>
+                            <div class="space-y-4">
+                                <p class="text-neutral-600">使用 labelImg 进行数据标注：</p>
+                                <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
+                                    <code class="text-green-400 text-sm"># 安装 labelImg
+pip install labelImg
+
+# 启动标注工具
+labelImg
+
+# 数据集预处理
+cd datasets && python Process.py</code>
+                                </div>
+                                <p class="text-neutral-600 text-sm">将图片放置在 datasets/data/images 目录，使用 YOLO 格式保存标注</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="flex items-start space-x-4">
+                        <div class="icon-gradient w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span class="text-white font-bold text-xl">3</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-neutral-900 mb-3">模型训练</h3>
+                            <div class="space-y-4">
+                                <p class="text-neutral-600">使用标注数据训练 YOLO8 模型：</p>
+                                <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
+                                    <code class="text-green-400 text-sm">python train.py</code>
+                                </div>
+                                <p class="text-neutral-600 text-sm">训练前需要在 train.py 中配置 imgsz 参数以匹配图片尺寸</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="glass-card rounded-2xl p-8 shadow-glass">
+                    <div class="flex items-start space-x-4">
+                        <div class="icon-gradient w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span class="text-white font-bold text-xl">4</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-neutral-900 mb-3">模型推理</h3>
+                            <div class="space-y-4">
+                                <p class="text-neutral-600">使用训练好的模型进行水印检测：</p>
+                                <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
+                                    <code class="text-green-400 text-sm">python test.py</code>
+                                </div>
+                                <p class="text-neutral-600 text-sm">模型将在图片中检测并标注出水印位置</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshots -->
+            <div class="mt-16 grid md:grid-cols-2 gap-8">
+                <div class="glass-card rounded-2xl overflow-hidden shadow-glass">
+                    <div class="screenshot-placeholder h-64 flex items-center justify-center">
+                        <div class="text-center text-white">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="font-medium">labelImg 标注界面</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white border-t border-neutral-100">
+                        <p class="text-sm text-neutral-600 text-center">labelImg 可视化标注工具界面</p>
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl overflow-hidden shadow-glass">
+                    <div class="screenshot-placeholder h-64 flex items-center justify-center">
+                        <div class="text-center text-white">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p class="font-medium">训练后模型预测结果</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white border-t border-neutral-100">
+                        <p class="text-sm text-neutral-600 text-center">YOLO8 模型检测效果展示</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Environment Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">开发环境</h2>
+                <p class="text-neutral-600 text-lg max-w-2xl mx-auto">项目使用的关键依赖版本</p>
+            </div>
+            <div class="glass-card rounded-2xl p-8 shadow-glow max-w-4xl mx-auto">
+                <div class="bg-neutral-900 rounded-lg p-6 overflow-x-auto">
+                    <code class="text-green-400 text-sm whitespace-pre">python==3.8.18
+torch==2.3.0+cu118
+torchvision==0.18.0+cu118
+ultralytics==8.2.28
+labelImg==1.8.6</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-50">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">常见问题</h2>
+                <p class="text-neutral-600 text-lg">使用过程中的常见疑问解答</p>
+            </div>
+
+            <div class="space-y-4">
+                <details class="glass-card rounded-xl shadow-glass overflow-hidden group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-brand-50 transition-colors">
+                        <span class="font-semibold text-neutral-900">如何自定义数据集进行训练？</span>
+                        <svg class="w-5 h-5 text-brand-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-neutral-600 space-y-2">
+                        <p>1. 安装 labelImg：<code class="bg-brand-50 px-2 py-1 rounded text-sm">pip install labelImg</code></p>
+                        <p>2. 启动 labelImg 并打开 datasets/data/images 目录</p>
+                        <p>3. 进行标注，保存格式选择 YOLO</p>
+                        <p>4. 执行数据集拆分：<code class="bg-brand-50 px-2 py-1 rounded text-sm">cd datasets && python Process.py</code></p>
+                        <p>5. 运行训练：<code class="bg-brand-50 px-2 py-1 rounded text-sm">python train.py</code></p>
+                    </div>
+                </details>
+
+                <details class="glass-card rounded-xl shadow-glass overflow-hidden group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-brand-50 transition-colors">
+                        <span class="font-semibold text-neutral-900">推荐的开发环境是什么？</span>
+                        <svg class="w-5 h-5 text-brand-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-neutral-600">
+                        <p>推荐使用 VS Code 的 Dev Containers 模式，可以快速配置一致的开发环境。也可以使用传统的虚拟环境方式，根据需要选择 CPU 或 CUDA 版本的 PyTorch。</p>
+                    </div>
+                </details>
+
+                <details class="glass-card rounded-xl shadow-glass overflow-hidden group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-brand-50 transition-colors">
+                        <span class="font-semibold text-neutral-900">如何自动移除检测到的水印？</span>
+                        <svg class="w-5 h-5 text-brand-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-neutral-600">
+                        <p>可以结合 ultralytics-YOLO8 与 IOPaint 进行组合使用，实现自动移除 YOLO 识别的目标水印。具体实现请查看 <a href="https://github.com/Samge0/yolo8-plus-iopaint" target="_blank" class="text-brand-500 hover:underline">yolo8-plus-iopaint</a> 仓库。</p>
+                    </div>
+                </details>
+
+                <details class="glass-card rounded-xl shadow-glass overflow-hidden group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-brand-50 transition-colors">
+                        <span class="font-semibold text-neutral-900">训练时图片尺寸需要注意什么？</span>
+                        <svg class="w-5 h-5 text-brand-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-neutral-600">
+                        <p>参与训练的图片宽高最好保持一致，训练前需要在 train.py 中配置 imgsz 参数以匹配图片的宽高信息，这样可以获得更好的训练效果。</p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="glass-card rounded-3xl p-12 shadow-glow bg-gradient-to-br from-brand-50 to-neutral-50 border-2 border-brand-100">
+                <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">开始检测水印</h2>
+                <p class="text-neutral-600 text-lg mb-8 max-w-2xl mx-auto">
+                    基于先进的 YOLO8 算法，快速准确地识别图片中的品牌 Logo 水印
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="https://github.com/Samge0/yolo8-watermark-brand" target="_blank" class="btn-gradient text-white px-8 py-4 rounded-xl font-semibold text-lg">
+                        查看项目
+                    </a>
+                    <a href="https://github.com/Samge0/yolo8-plus-iopaint" target="_blank" class="glass-card text-neutral-700 px-8 py-4 rounded-xl font-semibold text-lg border-2 border-brand-200">
+                        自动移除方案
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-neutral-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+                <div class="flex items-center space-x-3">
+                    <img src="icon.png" alt="Logo" class="w-8 h-8">
+                    <span class="font-semibold">YOLO8 水印检测</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="https://github.com/Samge0/yolo8-watermark-brand" target="_blank" class="text-neutral-400 hover:text-white transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://github.com/Samge0/yolo8-plus-iopaint" target="_blank" class="text-neutral-400 hover:text-white transition-colors">
+                        IOPaint 集成
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-neutral-800 text-center text-neutral-400 text-sm">
+                <p>基于 <a href="https://github.com/ultralytics/ultralytics" target="_blank" class="hover:text-brand-400 transition-colors">ultralytics-YOLO8</a> 与 <a href="https://github.com/Sanster/IOPaint" target="_blank" class="hover:text-brand-400 transition-colors">IOPaint</a> 构建</p>
+                <p class="mt-2">MIT License © 2024</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

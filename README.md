@@ -2,6 +2,9 @@
 
 本demo使用`labelImg`对`26`张样本图片的水印位置进行标注，[ultralytics-YOLO8](https://github.com/ultralytics/ultralytics)对水印位置进行模型训练&检测。
 
+
+> 🌐 **[在线宣传页](https://samge0.github.io/yolo8-watermark-brand/)** — 可视化了解功能特性与工作流程
+
 如果需要使用 [ultralytics-YOLO8](https://github.com/ultralytics/ultralytics) + [IOPaint](https://github.com/Sanster/IOPaint) 进行组合，自动移除yolo识别的目标水印，请点击[yolo8-plus-iopaint](https://github.com/Samge0/yolo8-plus-iopaint)仓库查看。
 
 
